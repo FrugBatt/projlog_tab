@@ -3,6 +3,7 @@ type tree_formula =
   | TFalse
   | TVar of int
   | TMetaVar of int
+  | TNot of tree_formula
   | TAnd of tree_formula * tree_formula
   | TOr of tree_formula * tree_formula
   | TForall of int * tree_formula
@@ -11,9 +12,8 @@ type tree_formula =
 
 type tree =
   | Nil
-  | Leaf of tree_formula
-  | Unary of tree_formula * tree
-  | Binary of tree_formula * tree * tree
+  | Unary of tree_formula * bool * tree
+  | Binary of tree_formula * bool * tree * tree
 
 
 let rec tree_formula_of_formula form =
@@ -30,8 +30,9 @@ let rec tree_formula_of_formula form =
 let rec tree_of_formula_list l =
   match l with 
   | [] -> Nil
-  | a::q -> Unary((tree_formula_of_formula a),(tree_of_formula_list q))
+  | a::q -> Unary(tree_formula_of_formula a, false, tree_of_formula_list q)
     
+
 let rec search_alpha l = 
   match l with  
   | [] -> failwith "No alpha term"
