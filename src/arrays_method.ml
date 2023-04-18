@@ -12,8 +12,7 @@ type tree_formula =
 
 type tree =
   | Nil
-  | Unary of tree_formula * bool * tree
-  | Binary of tree_formula * bool * tree * tree
+  | Node of tree_formula * bool * tree * tree
 
 
 let rec tree_formula_of_formula form =
@@ -34,8 +33,8 @@ let rec tree_of_formula_list l =
   | a::q -> Unary(tree_formula_of_formula a, false, tree_of_formula_list q)
     
 
-let rec search_alpha l = 
-  match l with  
+let rec search_alpha t = 
+  match t with  
   | [] -> failwith "No alpha term"
   | TAnd(f1,f2)::q -> (TAnd(f1,f2),q)
   | node::q -> let a,b = search_alpha q in (a,node::b)
@@ -61,5 +60,8 @@ let rec search_gamma l =
 let rec leaf_append tree tapp = 
   match tree with
   | Nil -> tapp
-  | Unary(form,b,t) -> Unary(form,b,leaf_append t tapp)
-  | Binary(form,b,t1,t2) -> Binary(form,b,leaf_append t1 tapp,leaf_append t2 tapp)
+  | Node(form,b,Nil,Nil) -> Node(form,b,tapp,Nil)
+  | Node(form,b,t,Nil) -> Node(form,b,leaf_append t tapp,Nil)
+  | Node (form,b,Nil,t) -> Node(form,b,Nil,leaf_append t tapp)
+  | Node (form,b,t1,t2)-> Node(form,b,leaf_append t1 tapp,leaf_append t2 tapp)
+  
