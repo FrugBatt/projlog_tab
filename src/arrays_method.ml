@@ -8,7 +8,6 @@ type tree_formula =
   | TOr of tree_formula * tree_formula
   | TForall of int * tree_formula
   | TExists of int * tree_formula
-(* A rajouter les prédicats ? *)
 
 type tree =
   | Nil
