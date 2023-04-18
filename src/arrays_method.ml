@@ -13,7 +13,6 @@ type tree =
   | Nil
   | Node of tree_formula * bool * tree * tree
 
-
 let rec tree_formula_of_formula form =
   let open Logic_formulas in
   match form with
@@ -29,8 +28,7 @@ let rec tree_formula_of_formula form =
 let rec tree_of_formula_list l =
   match l with 
   | [] -> Nil
-  | a::q -> Node(tree_formula_of_formula a, false, tree_of_formula_list q,Nil)
-    
+  | a::q -> Node(tree_formula_of_formula a, false, tree_of_formula_list q,Nil)    
 
 let rec search_alpha t = 
   match t with  
@@ -56,11 +54,19 @@ let rec search_gamma l =
   | TForall(v,f)::q -> (TForall(v,f),q)
   | node::q -> let a,b = search_gamma q in (a,node::b)
 
-let rec leaf_append tree tapp = 
+let rec leaf_append_one tree tapp = 
   match tree with
   | Nil -> tapp
   | Node(form,b,Nil,Nil) -> Node(form,b,tapp,Nil)
-  | Node(form,b,t,Nil) -> Node(form,b,leaf_append t tapp,Nil)
-  | Node (form,b,Nil,t) -> Node(form,b,Nil,leaf_append t tapp)
-  | Node (form,b,t1,t2)-> Node(form,b,leaf_append t1 tapp,leaf_append t2 tapp)
+  | Node(form,b,t,Nil) -> Node(form,b,leaf_append_one t tapp,Nil)
+  | Node (form,b,Nil,t) -> Node(form,b,Nil,leaf_append_one t tapp)
+  | Node (form,b,t1,t2)-> Node(form,b,leaf_append_one t1 tapp,leaf_append_one t2 tapp)
+
+let rec leaf_append_two tree tapp1 tapp2 = 
+  match tree with
+  | Nil -> failwith "Empty tree"
+  | Node(form,b,Nil,Nil) -> Node(form,b,tapp1,tapp2)
+  | Node(form,b,t,Nil) -> Node(form,b,leaf_append_two t tapp1 tapp2,Nil)
+  | Node (form,b,Nil,t) -> Node(form,b,Nil,leaf_append_two t tapp1 tapp2)
+  | Node (form,b,t1,t2)-> Node(form,b,leaf_append_two t1 tapp1 tapp2,leaf_append_two t2 tapp1 tapp2)
   
