@@ -29,7 +29,7 @@ let rec tree_formula_of_formula form =
 let rec tree_of_formula_list l =
   match l with 
   | [] -> Nil
-  | a::q -> Unary(tree_formula_of_formula a, false, tree_of_formula_list q)
+  | a::q -> Node(tree_formula_of_formula a, false, tree_of_formula_list q,Nil)
     
 
 let rec search_alpha t = 
