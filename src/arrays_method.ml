@@ -70,3 +70,9 @@ let rec leaf_append_two tree tapp1 tapp2 =
   | Node (form,b,Nil,t) -> Node(form,b,Nil,leaf_append_two t tapp1 tapp2)
   | Node (form,b,t1,t2)-> Node(form,b,leaf_append_two t1 tapp1 tapp2,leaf_append_two t2 tapp1 tapp2)
   
+let rec alpha_break tree =
+  match tree with
+  |Nil -> (Nil,false)
+  |Node(f,true,t1,t2)-> let t12,b1 = alpha_break t1 in if b1 then (Node(f,true,t12,t2),b1) else let t22,b2=alpha_break t2 in (Node(f,true,t1,t22),b2)
+  |Node(TAnd(f1,f2),false,t1,t2) -> (Node(TAnd(f1,f2),true,leaf_append_one (leaf_append_one t1 (Node(f1,false,Nil,Nil))) (Node(f2,false,Nil,Nil)),t2),true)
+  |Node(f,false,t1,t2)-> let t12,b1 = alpha_break t1 in if b1 then (Node(f,true,t12,t2),b1) else let t22,b2=alpha_break t2 in (Node(f,true,t1,t22),b2)
