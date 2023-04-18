@@ -11,7 +11,7 @@ type tree_formula =
 
 type tree =
   | Nil
-  | Node of { formula: tree_formula; broke: bool; left: tree; right: tree; father: tree }
+  | Node of { formula: tree_formula; broke: bool; left: tree; right: tree}
 
 let rec tree_formula_of_formula form =
   let open Logic_formulas in
@@ -43,12 +43,12 @@ let rec meta_formula_of_var_formula i = function
       if i = j then TExists (j, f)
       else TExists (j, meta_formula_of_var_formula i f)
 
-let tree_of_formula f = Node {formula = f; broke = false; left = Nil; right = Nil; father = Nil}
+let tree_of_formula f = Node {formula = f; broke = false; left = Nil; right = Nil}
 
 let rec tree_of_formula_list l =
   match l with
-  | [] -> Nil
-  | a::q -> Node {formula = tree_formula_of_formula a; broke = false; left = tree_of_formula_list q; right = Nil; father = Nil} (**TODO**)
+    | [] -> Nil
+    | a::q -> Node {formula = tree_formula_of_formula a; broke = false; left = tree_of_formula_list q; right = Nil}
 
 let rec leaf_append_one tree tapp =
   match tree with
@@ -56,7 +56,7 @@ let rec leaf_append_one tree tapp =
   | Node ({left = Nil; right = Nil; _} as n) -> Node {n with left = tapp}
   | Node n -> Node {n with left = leaf_append_one n.left tapp; right = leaf_append_one n.right tapp}
 
-let rec leaf_append_two tree tapp1 tapp2 =
+let rec leaf_append_two tree tapp1 tapp2 = 
   match tree with
   | Nil -> Nil
   | Node ({left = Nil; right = Nil; _} as n) -> Node {n with left = tapp1; right = tapp2}
@@ -73,6 +73,20 @@ let rec delta_break = function
         let t2', b2 = delta_break n.right in
         (Node {n with right = t2'}, b2)
 
+let rec alpha_break t = 
+  match t with
+    | Nil -> (Nil,false)
+    | Node {formula=TAnd(f1,f2) ; broke = false ; _ } as t -> 
+      let n = Node { formula = f1 ; broke = false ; left = tree_of_formula f2 ; right = Nil } in 
+      (leaf_append_one t n,true)
+    | Node ({ left = t1 ; right = t2 ; broke = b ; _ } as t) -> 
+      let t12, b1 = alpha_break t1 in 
+      if b1 then 
+        Node {t with left = t12},b1 
+      else 
+        let t22, b2 = alpha_break t2 in 
+        Node {t with right = t22},b2
+        
 let rec beta_break = function
   | Nil -> (Nil, false)
   | Node ({formula = TOr (f1, f2); broke = false; _} as n) ->
@@ -88,7 +102,7 @@ let rec beta_break = function
 let rec gamma_break = function
   | Nil -> (Nil, false)
   | Node ({formula = TForall (i, f); broke = false; _} as n) ->
-      let t = Node {n with broke = true} and n = Node {formula = meta_formula_of_var_formula i f; broke = false; left = Nil; right = Nil; father = Nil} in (** TODO **)
+      let t = Node {n with broke = true} and n = Node {formula = meta_formula_of_var_formula i f; broke = false; left = Nil; right = Nil} in
       (leaf_append_one t n, true)
   | Node n ->
       let t1', b1 = gamma_break n.left in
