@@ -167,21 +167,20 @@ let rec simple_form tf =
 
 (** Fonction de génération de l'arbre (avant remontée) **)
 
-let tree_gen lf = 
-  let true_l = List.map simple_form lf in let t = ref (tree_of_tree_formula_list true_l) in 
-    let inchange = ref false in 
+let tree_break t = 
+  let t_work = ref t in let inchange = ref false in 
     while not !inchange do 
-      let a,b = alpha_break !t in 
+      let a,b = alpha_break !t_work in 
       if not b then 
-        let a,b = delta_break !t in 
+        let a,b = delta_break !t_work in 
         if not b then 
-          let a,b = beta_break !t in 
+          let a,b = beta_break !t_work in 
           if not b then 
-            let a,b = gamma_break !t in inchange := b ; t:=a
-        else t:=a
-      else t:= a
-    else t:=a
+            let a,b = gamma_break !t_work in inchange := not b ; t_work:=a
+        else t_work:=a
+      else t_work:= a
+    else t_work:=a
 done ;
-!t
+!t_work
 ;;
 
