@@ -1,16 +1,6 @@
-(** Types **)
+open Logic_formulas
 
-type tree_formula =
-  | TTrue
-  | TFalse
-  | TVar of int
-  | TMetaVar of int
-  | TNot of tree_formula
-  | TAnd of tree_formula * tree_formula
-  | TOr of tree_formula * tree_formula
-  | TForall of int * tree_formula
-  | TExists of int * tree_formula
-  | TMetaFunction of int list
+(** Types **)
 
 type tree =
   | Nil
@@ -20,7 +10,6 @@ type tree =
 
 
 let rec tree_formula_of_formula form =
-  let open Logic_formulas in
   match form with
   | True -> TTrue
   | False -> TFalse
@@ -30,25 +19,6 @@ let rec tree_formula_of_formula form =
   | Or (f1, f2) -> TOr (tree_formula_of_formula f1, tree_formula_of_formula f2)
   | Forall (i, f) -> TForall (i, tree_formula_of_formula f)
   | Exists (i, f) -> TExists (i, tree_formula_of_formula f)
-
-
-let rec meta_formula_of_var_formula i = function
-  | TTrue -> TTrue
-  | TFalse -> TFalse
-  | TVar j -> 
-      if i = j then TMetaVar i
-      else TVar j
-  | TMetaVar j -> TMetaVar j
-  | TNot f -> TNot (meta_formula_of_var_formula i f)
-  | TAnd (f1, f2) -> TAnd (meta_formula_of_var_formula i f1, meta_formula_of_var_formula i f2)
-  | TOr (f1, f2) -> TOr (meta_formula_of_var_formula i f1, meta_formula_of_var_formula i f2)
-  | TForall (j, f) ->
-      if i = j then TForall (j, f)
-      else TForall (j, meta_formula_of_var_formula i f)
-  | TExists (j, f) ->
-      if i = j then TExists (j, f)
-      else TExists (j, meta_formula_of_var_formula i f)
-  | TMetaFunction l -> TMetaFunction l
 
 let tree_of_formula f = Node {formula = f; broke = false; left = Nil; right = Nil}
 
@@ -78,6 +48,9 @@ let rec leaf_append_two tree tapp1 tapp2 =
   | Node ({left = Nil; right = Nil; _} as n) -> Node {n with left = tapp1; right = tapp2}
   | Node n -> Node {n with left = leaf_append_two n.left tapp1 tapp2; right = leaf_append_two n.right tapp1 tapp2}
   
+
+(** Fonctions de parcours **)
+
 let get_meta_higher t n =
   let rec aux = function
     | Nil -> ([], false)
@@ -118,6 +91,7 @@ let rec replace_vars i form frep = match form with
       if i = j then TExists (j, f)
       else TExists (j, replace_vars i f frep)
   | TMetaFunction l -> TMetaFunction l
+
 
 (** Fonctions de destruction **)
 
