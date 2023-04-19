@@ -177,9 +177,9 @@ let tree_break t =
           let a,b = beta_break !t_work in 
           if not b then 
             let a,b = gamma_break !t_work in inchange := not b ; t_work:=a
-        else t_work:=a
-      else t_work:= a
-    else t_work:=a
+          else t_work:=a
+        else t_work:= a
+      else t_work:=a
 done ;
 !t_work
 ;;
