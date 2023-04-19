@@ -1,3 +1,5 @@
+(** Types **)
+
 type tree_formula =
   | TTrue
   | TFalse
@@ -8,10 +10,15 @@ type tree_formula =
   | TOr of tree_formula * tree_formula
   | TForall of int * tree_formula
   | TExists of int * tree_formula
+  | TMetaFunction of int * int list
 
 type tree =
   | Nil
   | Node of { formula: tree_formula; broke: bool; left: tree; right: tree}
+
+
+(** Fonctions de conversion **)
+
 
 let rec tree_formula_of_formula form =
   let open Logic_formulas in
@@ -42,7 +49,7 @@ let rec meta_formula_of_var_formula i = function
   | TExists (j, f) ->
       if i = j then TExists (j, f)
       else TExists (j, meta_formula_of_var_formula i f)
-
+  | TMetaFunction (i,l) -> TMetaFunction (i,l)
 let tree_of_formula f = Node {formula = f; broke = false; left = Nil; right = Nil}
 
 let rec tree_of_formula_list l =
@@ -50,7 +57,16 @@ let rec tree_of_formula_list l =
     | [] -> Nil
     | a::q -> Node {formula = tree_formula_of_formula a; broke = false; left = tree_of_formula_list q; right = Nil}
 
-let rec leaf_append_one tree tapp =
+let rec tree_of_tree_formula_list l =
+  match l with
+    | [] -> Nil
+    | a::q -> Node {formula =  a; broke = false; left = tree_of_formula_list q; right = Nil}
+
+
+(** Fonctions d'ajout **)    
+
+
+    let rec leaf_append_one tree tapp =
   match tree with
   | Nil -> Nil
   | Node ({left = Nil; right = Nil; _} as n) -> Node {n with left = tapp}
@@ -61,6 +77,10 @@ let rec leaf_append_two tree tapp1 tapp2 =
   | Nil -> Nil
   | Node ({left = Nil; right = Nil; _} as n) -> Node {n with left = tapp1; right = tapp2}
   | Node n -> Node {n with left = leaf_append_two n.left tapp1 tapp2; right = leaf_append_two n.right tapp1 tapp2}
+
+
+(** Fonctions de destruction **)
+
 
 let rec delta_break = function
   | Nil -> (Nil, false)
@@ -76,17 +96,17 @@ let rec delta_break = function
 let rec alpha_break t = 
   match t with
     | Nil -> (Nil,false)
-    | Node {formula=TAnd(f1,f2) ; broke = false ; _ } as t -> 
+    | Node ({formula=TAnd(f1,f2) ; broke = false ; _ } as t) -> 
       let n = Node { formula = f1 ; broke = false ; left = tree_of_formula f2 ; right = Nil } in 
-      (leaf_append_one t n,true)
-    | Node ({ left = t1 ; right = t2 ; broke = b ; _ } as t) -> 
+      (leaf_append_one (Node {t with broke = true}) n,true)
+    | Node ({ left = t1 ; right = t2 ; _ } as t) -> 
       let t12, b1 = alpha_break t1 in 
       if b1 then 
         Node {t with left = t12},b1 
       else 
         let t22, b2 = alpha_break t2 in 
         Node {t with right = t22},b2
-        
+
 let rec beta_break = function
   | Nil -> (Nil, false)
   | Node ({formula = TOr (f1, f2); broke = false; _} as n) ->
@@ -110,3 +130,40 @@ let rec gamma_break = function
       else
         let t2', b2 = gamma_break n.right in
         (Node {n with right = t2'}, b2)
+
+(** Fonctions de simplification **)
+
+let rec simple_form tf = 
+  match tf with
+    |TNot(TAnd(f1,f2)) ->TOr(simple_form (TNot f1), simple_form (TNot f2))
+    |TNot(TOr(f1,f2)) ->TAnd(simple_form (TNot f1), simple_form (TNot f2))
+    |TNot(TNot f) -> simple_form f
+    |TNot(TForall(i,f)) -> TExists(i,simple_form (TNot f))
+    |TNot(TExists(i,f)) -> TForall(i,simple_form (TNot f))
+    |TNot(f) -> TNot(simple_form f)
+    |TOr (f1,f2) -> TOr (simple_form f1, simple_form f2)
+    |TAnd (f1,f2) -> TAnd (simple_form f1, simple_form f2)
+    |TForall (i,f) -> TForall (i,simple_form f)
+    |TExists (i,f) -> TExists (i,simple_form f)
+    | tf -> tf
+
+(** Fonction de génération de l'arbre (avant remontée) **)
+
+let tree_gen lf = 
+  let true_l = List.map simple_form lf in let t = ref (tree_of_tree_formula_list true_l) in 
+    let inchange = ref false in 
+    while not !inchange do 
+      let a,b = alpha_break !t in 
+      if not b then 
+        let a,b = delta_break !t in 
+        if not b then 
+          let a,b = beta_break !t in 
+          if not b then 
+            let a,b = gamma_break !t in inchange := b ; t:=a
+        else t:=a
+      else t:= a
+    else t:=a
+done ;
+!t
+;;
+
