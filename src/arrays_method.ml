@@ -184,3 +184,10 @@ done ;
 !t_work
 ;;
 
+let tree_init_single form =
+  let tform = tree_formula_of_formula form in
+  tree_break (tree_of_formula (simple_form (TNot tform)))
+
+let tree_init (form_list : formula list) =
+  tree_of_tree_formula_list
+    (List.map simple_form (List.map tree_formula_of_formula form_list))
