@@ -60,7 +60,7 @@ let rec tree_of_formula_list l =
 let rec tree_of_tree_formula_list l =
   match l with
     | [] -> Nil
-    | a::q -> Node {formula =  a; broke = false; left = tree_of_formula_list q; right = Nil}
+    | a::q -> Node {formula =  a; broke = false; left = tree_of_tree_formula_list q; right = Nil}
 
 
 (** Fonctions d'ajout **)    
