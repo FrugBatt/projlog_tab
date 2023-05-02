@@ -51,24 +51,24 @@ let rec get_meta f =
   | TMetaFunction _ -> empty
   | TPredicate (_, l) -> List.fold_left (fun s f -> union s (get_meta f)) empty l
 
-let rec meta_formula_of_var_formula i = function
+let rec meta_formula_of_var_formula ivar imeta = function
   | TTrue -> TTrue
   | TFalse -> TFalse
   | TVar j -> 
-      if i = j then TMetaVar i
+      if ivar = j then TMetaVar imeta
       else TVar j
   | TMetaVar j -> TMetaVar j
-  | TNot f -> TNot (meta_formula_of_var_formula i f)
-  | TAnd (f1, f2) -> TAnd (meta_formula_of_var_formula i f1, meta_formula_of_var_formula i f2)
-  | TOr (f1, f2) -> TOr (meta_formula_of_var_formula i f1, meta_formula_of_var_formula i f2)
+  | TNot f -> TNot (meta_formula_of_var_formula ivar imeta f)
+  | TAnd (f1, f2) -> TAnd (meta_formula_of_var_formula ivar imeta f1, meta_formula_of_var_formula ivar imeta f2)
+  | TOr (f1, f2) -> TOr (meta_formula_of_var_formula ivar imeta f1, meta_formula_of_var_formula ivar imeta f2)
   | TForall (j, f) ->
-      if i = j then TForall (j, f)
-      else TForall (j, meta_formula_of_var_formula i f)
+      if ivar = j then TForall (j, f)
+      else TForall (j, meta_formula_of_var_formula ivar imeta f)
   | TExists (j, f) ->
-      if i = j then TExists (j, f)
-      else TExists (j, meta_formula_of_var_formula i f)
+      if ivar = j then TExists (j, f)
+      else TExists (j, meta_formula_of_var_formula ivar imeta f)
   | TMetaFunction (j, l) -> TMetaFunction (j, l)
-  | TPredicate (j, l) -> TPredicate (j, List.map (meta_formula_of_var_formula i) l)
+  | TPredicate (j, l) -> TPredicate (j, List.map (meta_formula_of_var_formula ivar imeta) l)
 
 
 (** Substitution **)

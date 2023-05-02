@@ -62,6 +62,18 @@ let rec leaf_append_two tree tapp1 tapp2 =
   | Node n ->
     leaf_append_two n.left tapp1 tapp2;
     leaf_append_two n.right tapp1 tapp2
+
+let rec leaf_append_with_meta tree i f =
+  match tree with
+  | Nil -> ()
+  | Node {left = Nil; right = Nil; _} ->
+    let meta_formula = meta_formula_of_var_formula i (get_meta_val ()) f in
+    let tapp = tree_of_formula meta_formula in
+    set_left tree tapp;
+    set_father tapp tree
+  | Node n ->
+    leaf_append_with_meta n.left i f;
+    leaf_append_with_meta n.right i f
   
 
 (** Fonctions de parcours **)
@@ -101,8 +113,7 @@ let rec gamma_break t =
   match t with
   | Nil -> false
   | Node {formula = TForall (i, f); broke = false; _} ->
-      let tapp = Node {formula = meta_formula_of_var_formula i f; broke = false; left = Nil; right = Nil; father = Nil} in
-      leaf_append_one t tapp;
+      leaf_append_with_meta t i f;
       set_broke t true;
       true
   | Node n -> gamma_break n.left || gamma_break n.right
