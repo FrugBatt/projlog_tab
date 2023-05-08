@@ -31,5 +31,10 @@ let is_satisfiable f =
   let ntf = simple_form (TNot tf) in
   solve_formula [ntf]
 
+let f1 = Exists ("x", Impl (Predicate ("R", [Var "x"]), Forall ("y", Predicate ("R", [Var "y"]))))
+let f2 = Impl (Exists ("x", Predicate ("R", [Var "x"])), Forall ("y", Predicate ("R", [Var "y"])))
+let f3 = Exists ("x", Impl (Predicate ("R", [Var "x"; Var "x"]), Forall ("y", Predicate ("R", [Var "x"; Var "y"]))))
+let f4 = Exists ("x", Forall ("y", Impl (Impl (Impl (Predicate ("R", [Predicate ("f", [Var "x"])]), Predicate ("R", [Predicate ("f", [Var "y"])])), Predicate ("R", [Var "x"])), Predicate ("R", [Var "y"]))))
+
 let () =
-  is_satisfiable (Exists ("x", Impl (Predicate ("P", [Var "x"]), Forall ("y", Predicate ("P", [Var "y"])))))
+  is_satisfiable f2

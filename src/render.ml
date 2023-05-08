@@ -9,8 +9,8 @@ let render_tree_formula f =
     | TVar i -> i
     | TMetaVar i -> (i ^ "'")
     | TNot f -> "¬" ^ (aux f)
-    | TAnd (f1, f2) -> (aux f1) ^ "∧" ^ (aux f2)
-    | TOr (f1, f2) -> (aux f1) ^ "∨" ^ (aux f2)
+    | TAnd (f1, f2) -> "(" ^ (aux f1) ^ ")∧(" ^ (aux f2) ^ ")"
+    | TOr (f1, f2) -> "(" ^ (aux f1) ^ ")∨(" ^ (aux f2) ^ ")"
     | TForall (i, f) -> "∀" ^ i ^ "(" ^ (aux f) ^ ")"
     | TExists (i, f) -> "∃" ^ i ^ "(" ^ (aux f) ^ ")"
     | TMetaFunction (i, l) ->
