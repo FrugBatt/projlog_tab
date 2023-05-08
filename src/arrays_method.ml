@@ -123,7 +123,7 @@ let rec delta_break t =
   | Nil -> false
   | Node {formula = TExists (i, f); broke = false; _} ->
     let metas = get_meta_higher t in
-    let fmod = substitute i f (TMetaFunction (get_meta_val (), metas)) in
+    let fmod = substitute_var i f (TMetaFunction (get_meta_val (), List.map (fun i -> TMetaVar i) metas)) in
     let tapp = tree_of_formula fmod in
     leaf_append_one t tapp;
     set_broke t true;

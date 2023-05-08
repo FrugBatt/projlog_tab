@@ -1,45 +1,11 @@
 open Logic_formulas
-open Arrays_method
 
-(** Types **)
+module FormulaCmp = struct
+  type t = tree_formula
+  let compare = compare
+end
 
-type formula_eq =
-  | ETrue
-  | EFalse
-  | EUnification
-
-
-(** Closers **)
-
-let rec get_branchs t =
-  match t with
-  | Nil -> []
-  | Node {left = Nil; right = Nil; _} -> [t]
-  | Node n -> (get_branchs n.left) @ (get_branchs n.right)
-
-let rec get_branch_formulas branch =
-  match branch with
-  | Nil -> []
-  | Node ({broke = false; _ } as n) -> n.formula :: get_branch_formulas n.father
-  | Node n -> get_branch_formulas n.father
-
-let get_branch_closers branch = Non_deterministic.take_two (get_branch_formulas branch)
-
-let rec every_closers closers =
-  match closers with
-  | [] -> [[]]
-  | h :: t ->
-    let rval = every_closers t in
-    List.flatten (List.map (fun elt -> List.map (fun elt2 -> elt :: elt2) rval) h)
-
-let get_branchs_closers branchs =
-  let branch_closers = List.map (fun b -> Non_deterministic.run (get_branch_closers b)) branchs in
-  let closers = every_closers branch_closers in
-  let closers_monad = List.map Non_deterministic.return closers in
-  Non_deterministic.choice closers_monad
-
-
-(** Unification algorithm **)
+module FormulaSet = Set.Make(FormulaCmp)
 
 let rec is_modifiable f =
   match f with
@@ -48,32 +14,58 @@ let rec is_modifiable f =
   | TVar _ -> false
   | TMetaVar _ -> true
   | TNot f -> is_modifiable f
-  | TAnd _ -> false (* un ET est toujours déjà consommé et on ne peut pas le traiter ici *)
-  | TOr _ -> false (* déjà consomé *)
-  | TForall _ -> false (* déjà consomé *)
-  | TExists _ -> false (* déjà consomé *)
+  | TAnd _ -> assert false (* un ET est toujours déjà consommé et on ne peut pas le traiter ici *)
+  | TOr _ -> assert false (* déjà consomé *)
+  | TForall _ -> assert false (* déjà consomé *)
+  | TExists _ -> assert false (* déjà consomé *)
   | TMetaFunction _ -> true
-  | TPredicate _ -> false
+  | TPredicate (_, l) -> List.exists is_modifiable l
 
-let rec eval_eq f1 f2 =
-  match (f1, f2) with
-  | (TTrue, TTrue) -> ETrue
-  | (TTrue, f) -> if is_modifiable f then EUnification else EFalse
-  | (TFalse, TFalse) -> ETrue
-  | (TFalse, f) -> if is_modifiable f then EUnification else EFalse
-  | (TVar i, TVar j) when i = j -> ETrue
-  | (TVar _, _) -> EFalse
-  | (TMetaVar _, _) -> EUnification
-  | (TNot f1, TNot f2) -> eval_eq f1 f2
-  | (TNot _, TMetaVar _) -> EUnification
-  | (TNot _, TMetaFunction _) -> EUnification
-  | (TNot _, _) -> EFalse
-  | (TAnd _, _) -> EFalse (* déjà consomé *)
-  | (TOr _, _) -> EFalse (* déjà consomé *)
-  | (TForall _, _) -> EFalse (* déjà consomé *)
-  | (TExists _, _) -> EFalse (* déjà consomé *)
-  | (TMetaFunction _, _) -> EUnification
-  | (TPredicate (i, l1), TPredicate (j, l2)) when i = j  -> if (List.exists is_modifiable l1) || (List.exists is_modifiable l2) then EUnification else if l1 = l2 then ETrue else EFalse
-  | (TPredicate _, _) -> EFalse
+let substitute_unif l a b = List.map (fun (f1, f2) -> (substitute f1 a b, substitute f2 a b)) l
 
+let rec has_formula f a =
+  match f with
+  | f when f = a -> true
+  | TTrue -> false
+  | TFalse -> false
+  | TVar _ -> false
+  | TMetaVar _ -> false
+  | TNot f -> has_formula f a
+  | TAnd (f1, f2) -> has_formula f1 a || has_formula f2 a
+  | TOr (f1, f2) -> has_formula f1 a || has_formula f2 a
+  | TForall (_, f) -> has_formula f a
+  | TExists (_, f) -> has_formula f a
+  | TMetaFunction (_, l) -> List.exists (fun f -> has_formula f a) l
+  | TPredicate (_, l) -> List.exists (fun f -> has_formula f a) l
+
+let rec unification l =
+  match l with
+  | [] -> true
+  | (f1, f2) :: t when f1 = f2 -> unification t
+  | (f1, f2) :: _ when not (is_modifiable f1) && not (is_modifiable f2) -> false
+  | (f1, f2) :: t when not (is_modifiable f1) -> unification ((f2, f1) :: t)
+  | (TMetaFunction (i, l1), TMetaFunction (j, l2)) :: t ->
+    if i = j then false
+    else
+      let ivars = FormulaSet.of_list l1 and jvars = FormulaSet.of_list l2 in
+      let intersection = FormulaSet.inter ivars jvars in
+        if FormulaSet.is_empty intersection then false
+        else
+          let new_form = TMetaFunction (get_meta_val (), List.of_seq (FormulaSet.to_seq intersection)) in
+          unification (substitute_unif (substitute_unif t (TMetaFunction (i, l1)) new_form) (TMetaFunction (j, l2)) new_form)
+  | (f, TMetaFunction (i, l)) :: t -> unification ((TMetaFunction (i, l), f) :: t)
+  | (TMetaFunction (i, l), f) :: t ->
+    let ivars = FormulaSet.of_list l in
+    let depvars = FormulaSet.filter (fun f' -> has_formula f f') ivars in
+    if FormulaSet.is_empty depvars then false
+    else
+      unification (substitute_unif t (TMetaFunction (i, l)) f)
+  | (TMetaVar i, f) :: t ->
+    if has_formula f (TMetaVar i) then false
+    else
+      unification (substitute_unif t (TMetaVar i) f)
+  | (TPredicate (i, l1), TPredicate (j, l2)) :: t ->
+    if i <> j || (List.length l1) <> (List.length l2) then false
+    else unification ((List.combine l1 l2) @ t)
+  | _ -> false
 
