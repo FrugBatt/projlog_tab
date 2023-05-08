@@ -1,2 +1,3 @@
 (executable
+ (preprocess (pps ppx_deriving.show))
  (name main))

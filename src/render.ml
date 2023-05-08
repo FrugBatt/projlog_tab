@@ -14,7 +14,7 @@ let render_tree_formula f =
     | TForall (i, f) -> "\\forall x_{" ^ (string_of_int i) ^ "} " ^ (aux f)
     | TExists (i, f) -> "\\exists x_{" ^ (string_of_int i) ^ "} " ^ (aux f)
     | TMetaFunction (i, l) ->
-      let s = String.concat ", " (List.map (fun i -> "X_{" ^ (string_of_int i) ^ "}") l) in
+      let s = String.concat ", " (List.map aux l) in
       "f_{" ^ (string_of_int i) ^ "}(" ^ s ^ ")"
     | TPredicate (i, l) ->
       let s = String.concat ", " (List.map aux l) in

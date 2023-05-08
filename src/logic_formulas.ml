@@ -10,6 +10,7 @@ type formula =
   | Forall of int * formula
   | Exists of int * formula
   | Predicate of int * formula list
+  | Impl of formula * formula
 
 type tree_formula =
   | TTrue
@@ -23,6 +24,7 @@ type tree_formula =
   | TExists of int * tree_formula
   | TMetaFunction of int * tree_formula list
   | TPredicate of int * tree_formula list
+[@@deriving show]
 
 module IntSet = Set.Make (Int)
 
@@ -126,6 +128,7 @@ let rec tree_formula_of_formula form =
   | Forall (i, f) -> TForall (i, tree_formula_of_formula f)
   | Exists (i, f) -> TExists (i, tree_formula_of_formula f)
   | Predicate (i, l) -> TPredicate (i, List.map tree_formula_of_formula l)
+  | Impl (f1, f2) -> TOr (TNot (tree_formula_of_formula f1), tree_formula_of_formula f2)
 
 
 (** Fonctions de simplification **)

@@ -1,12 +1,10 @@
+open Logic_formulas
 open Arrays_method
 
 (** Types **)
 
-type formula_eq =
-  | ETrue
-  | EFalse
-  | EUnification
-
+type closers = (tree_formula * tree_formula) list
+[@@deriving show]
 
 (** Closers **)
 
@@ -22,7 +20,11 @@ let rec get_branch_formulas branch =
   | Node ({broke = false; _ } as n) -> n.formula :: get_branch_formulas n.father
   | Node n -> get_branch_formulas n.father
 
-let get_branch_closers branch = Non_deterministic.take_two (get_branch_formulas branch)
+let get_branch_closers branch =
+  let open Non_deterministic in
+  take_two (get_branch_formulas branch) >>= fun (f1, f2) ->
+    let nf1 = simple_form (TNot f1) in
+    return (nf1, f2)
 
 let rec every_closers closers =
   match closers with

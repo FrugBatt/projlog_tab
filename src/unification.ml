@@ -44,6 +44,9 @@ let rec unification l =
   | (f1, f2) :: t when f1 = f2 -> unification t
   | (f1, f2) :: _ when not (is_modifiable f1) && not (is_modifiable f2) -> false
   | (f1, f2) :: t when not (is_modifiable f1) -> unification ((f2, f1) :: t)
+  | (TMetaFunction (i, []), _) :: _ ->
+    let meta = TMetaVar (get_meta_val ()) in
+      unification (substitute_unif l (TMetaFunction (i, [])) meta)
   | (TMetaFunction (i, l1), TMetaFunction (j, l2)) :: t ->
     if i = j then false
     else
