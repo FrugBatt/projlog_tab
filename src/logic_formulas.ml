@@ -3,43 +3,60 @@
 type formula =
   | True
   | False
-  | Var of int
+  | Var of string
   | Not of formula
   | And of formula * formula
   | Or of formula * formula
-  | Forall of int * formula
-  | Exists of int * formula
-  | Predicate of int * formula list
+  | Forall of string * formula
+  | Exists of string * formula
+  | Predicate of string * formula list
   | Impl of formula * formula
 
 type tree_formula =
   | TTrue
   | TFalse
-  | TVar of int
-  | TMetaVar of int
+  | TVar of string
+  | TMetaVar of string
   | TNot of tree_formula
   | TAnd of tree_formula * tree_formula
   | TOr of tree_formula * tree_formula
-  | TForall of int * tree_formula
-  | TExists of int * tree_formula
-  | TMetaFunction of int * tree_formula list
-  | TPredicate of int * tree_formula list
+  | TForall of string * tree_formula
+  | TExists of string * tree_formula
+  | TMetaFunction of string * tree_formula list
+  | TPredicate of string * tree_formula list
 [@@deriving show]
 
-module IntSet = Set.Make (Int)
+module StringSet = Set.Make (String)
 
 
 (** Values **)
 
+let set_string s i c = String.mapi (fun j c' -> if i = j then c else c') s
+
+let rec incr_string s =
+  let n = String.length s in
+  let rec aux i =
+    if i = -1 then
+      "A" ^ s
+    else if s.[i] = 'Z' then
+      let ns = aux (i + 1) in
+      set_string ns i 'A'
+    else
+      set_string s i (Char.chr (Char.code s.[i] + 1))
+  in
+  aux (n-1)
+
 let get_meta_val =
-  let counter = ref (-1) in
-  fun () -> incr counter; !counter
+  let counter = ref "" in
+  fun () -> counter := incr_string !counter; !counter
+  (* let counter = ref (-1) in *)
+  (* fun () -> incr counter; !counter *)
 
 
 (** MetaVar **)
 
 let rec get_meta f =
-  let open IntSet in
+  let open StringSet in
   match f with
   | TTrue -> empty
   | TFalse -> empty

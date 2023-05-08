@@ -29,6 +29,25 @@ let set_father t father =
   | Nil -> ()
   | Node n -> n.father <- father
 
+let get_formula t =
+  match t with
+  | Nil -> TTrue
+  | Node n -> n.formula
+
+let rec depth tree n =
+  if (get_formula tree) = (get_formula n) then 0
+  else match tree with
+    | Nil -> -1
+    | Node node ->
+      let ld = depth node.left n and rd = depth node.right n in
+        if ld = -1 && rd = -1 then -1
+        else if ld = -1 then rd + 1
+        else ld + 1
+
+let rec size tree =
+  match tree with
+  | Nil -> 0
+  | Node node -> 1 + max (size node.left) (size node.right)
 
 (** Fonctions de conversion **)
 
@@ -79,7 +98,7 @@ let rec leaf_append_with_meta tree i f =
 (** Fonctions de parcours **)
 
 let get_meta_higher t =
-  let open IntSet in
+  let open StringSet in
   let rec aux = function
   | Nil -> empty
   | Node n -> union (get_meta n.formula) (aux n.father)
