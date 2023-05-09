@@ -9,13 +9,10 @@
 %left IMPLIES
 %nonassoc FORALL EXISTS
 %start parse
-%type <Logic_formulas.formula list> parse
+%type <Logic_formulas.formula> parse
 %%
 parse :
-    | formula EOL parse { [$1]@($3) }
-    | EOL parse { $2 }
-    | formula EOF { [$1] }
-    | EOF { [] }
+    | formula EOL { $1 }
     ;
 
 formula :
