@@ -12,6 +12,16 @@ let write_file msg =
   Printf.fprintf oc "%s\n" msg;
   close_out oc
 
+  let nom str =
+    let n = String.length str in
+    if n < 6 then failwith "Nom de fichier problematique"
+    else if String.sub str (n - 5) 5 <> ".prop" then failwith "Mauvaise extension"
+    else String.sub str 0 (n - 4) ^ "dot"
+  
+  let write file str =
+    let out_channel = open_out file in
+    output_string out_channel str
+
 let solve_formula tfl =
   (* let tfl = List.map tree_formula_of_formula fl in *)
   let tree = tree_of_tree_formula_list tfl in
@@ -26,7 +36,7 @@ let solve_formula tfl =
   | Some cl ->
     let cl_clean = List.map (fun (f1, f2) -> (simple_form (TNot f1), f2)) cl in
     Printf.printf "Unification found :\n %s\n" (show_closers cl_clean);
-    write_file (Render.render tree cl_clean)
+    write (nom Sys.argv.(1)) (Render.render tree cl_clean)
 
 let is_satisfiable f =
   let tf = tree_formula_of_formula f in
@@ -40,17 +50,6 @@ let f4 = Exists ("x", Forall ("y", Impl (Impl (Impl (Predicate ("R", [Predicate 
 
 (* let () =
   is_satisfiable f4 *)
-let nom str =
-  let n = String.length str in
-  if n < 5 then failwith "Nom de fichier problematique"
-  else if String.sub str (n - 5) 5 <> ".prop" then failwith "Mauvaise extension"
-  else String.sub str 0 (n - 4) ^ "dot"
-
-let write_in file str =
-  let out_channel = open_out file in
-  output_string out_channel str
 
 let _ = 
-  let lexbuf = Lexing.from_channel (open_in Sys.argv.(1)) in let lform = Parser.parse Lexer.token lexbuf in 
-  let tree = Arrays_method.tree_of_formula_list lform in 
-  write_in (nom Sys.argv.(1)) (Render.render tree []) 
+  let lexbuf = Lexing.from_channel (open_in Sys.argv.(1)) in let lform = Parser.parse Lexer.token lexbuf in is_satisfiable lform
