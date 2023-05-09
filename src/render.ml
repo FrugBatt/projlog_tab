@@ -11,8 +11,8 @@ let render_tree_formula f =
     | TNot f -> "¬" ^ (aux f)
     | TAnd (f1, f2) -> "(" ^ (aux f1) ^ ")∧(" ^ (aux f2) ^ ")"
     | TOr (f1, f2) -> "(" ^ (aux f1) ^ ")∨(" ^ (aux f2) ^ ")"
-    | TForall (i, f) -> "∀" ^ i ^ "(" ^ (aux f) ^ ")"
-    | TExists (i, f) -> "∃" ^ i ^ "(" ^ (aux f) ^ ")"
+    | TForall (i, f) -> "∀" ^ i ^ "," ^ (aux f)
+    | TExists (i, f) -> "∃" ^ i ^ "," ^ (aux f)
     | TMetaFunction (i, l) ->
       let s = String.concat ", " (List.map aux l) in
       i ^ "'(" ^ s ^ ")"
