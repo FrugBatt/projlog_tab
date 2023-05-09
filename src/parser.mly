@@ -7,12 +7,15 @@
 %left OR NOT
 %left AND
 %left IMPLIES
-%nonassoc FORALL EXISTS
+%left FORALL EXISTS
 %start parse
 %type <Logic_formulas.formula> parse
 %%
 parse :
     | formula EOL { $1 }
+    | EOL parse { $2 }
+    | formula EOF { $1 }
+    | EOF { Logic_formulas.True }
     ;
 
 formula :
