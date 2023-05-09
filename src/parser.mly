@@ -34,5 +34,5 @@ formula :
 
 args :
     | VAR { [Logic_formulas.Var($1)] }
-    | VAR COMMA args { [$1]@($3) }
+    | VAR COMMA args { [Logic_formulas.Var($1)]@($3) }
     ;

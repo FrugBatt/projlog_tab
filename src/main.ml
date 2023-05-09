@@ -38,5 +38,19 @@ let f2 = Impl (Exists ("x", Predicate ("R", [Var "x"])), Forall ("y", Predicate 
 let f3 = Exists ("x", Impl (Predicate ("R", [Var "x"; Var "x"]), Forall ("y", Predicate ("R", [Var "x"; Var "y"]))))
 let f4 = Exists ("x", Forall ("y", Impl (Impl (Impl (Predicate ("R", [Predicate ("f", [Var "x"])]), Predicate ("R", [Predicate ("f", [Var "y"])])), Predicate ("R", [Var "x"])), Predicate ("R", [Var "y"]))))
 
-let () =
-  is_satisfiable f4
+(* let () =
+  is_satisfiable f4 *)
+let nom str =
+  let n = String.length str in
+  if n < 5 then failwith "Nom de fichier problematique"
+  else if String.sub str (n - 5) 5 <> ".prop" then failwith "Mauvaise extension"
+  else String.sub str 0 (n - 4) ^ "dot"
+
+let write_in file str =
+  let out_channel = open_out file in
+  output_string out_channel str
+
+let _ = 
+  let lexbuf = Lexing.from_channel (open_in Sys.argv.(1)) in let lform = Parser.parse Lexer.token lexbuf in 
+  let tree = Arrays_method.tree_of_formula_list lform in 
+  write_in (nom Sys.argv.(1)) (Render.render tree []) 

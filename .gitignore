@@ -2,3 +2,7 @@
 *.log
 *.pdf
 _build/
+*.prop
+*.out
+*.png
+*.dot

@@ -61,7 +61,7 @@ let rec tree_of_tree_formula_list l =
       let t = Node {formula = a; broke = false; left = t'; right = Nil; father = Nil} in
       set_father t' t;
       t
-
+let tree_of_formula_list l = tree_of_tree_formula_list (List.map tree_formula_of_formula l)
 
 (** Fonctions d'ajout **)    
 
