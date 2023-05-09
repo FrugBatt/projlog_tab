@@ -153,13 +153,3 @@ let rec delta_break t =
 (** Fonction de génération de l'arbre (avant remontée) **)
 
 let tree_break t = while alpha_break t || delta_break t || beta_break t || gamma_break t do () done; ()
-
-let tree_init_single form =
-  let tform = tree_formula_of_formula form in
-  tree_break (tree_of_formula (simple_form (TNot tform)))
-
-let tree_init (form_list : formula list) =
-  tree_break
-    (tree_of_tree_formula_list
-       (List.map simple_form (List.map tree_formula_of_formula form_list)))
-

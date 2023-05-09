@@ -1,5 +1,7 @@
 open Logic_formulas
 
+(** Set of meta variables **)
+
 module FormulaCmp = struct
   type t = tree_formula
   let compare = compare
@@ -7,19 +9,8 @@ end
 
 module FormulaSet = Set.Make(FormulaCmp)
 
-let rec is_modifiable f =
-  match f with
-  | TTrue -> false
-  | TFalse -> false
-  | TVar _ -> false
-  | TMetaVar _ -> true
-  | TNot f -> is_modifiable f
-  | TAnd _ -> assert false (* un ET est toujours déjà consommé et on ne peut pas le traiter ici *)
-  | TOr _ -> assert false (* déjà consomé *)
-  | TForall _ -> assert false (* déjà consomé *)
-  | TExists _ -> assert false (* déjà consomé *)
-  | TMetaFunction _ -> true
-  | TPredicate (_, l) -> List.exists is_modifiable l
+
+(** Unification algorithm **)
 
 let substitute_unif l a b = List.map (fun (f1, f2) -> (substitute f1 a b, substitute f2 a b)) l
 

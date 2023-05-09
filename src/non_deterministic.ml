@@ -1,3 +1,4 @@
+(** A simple monad for nondeterministic computations. **)
 type 'a t = 'a list
 
 let return x = [x]

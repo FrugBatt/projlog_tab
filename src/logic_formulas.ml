@@ -87,27 +87,21 @@ let rec meta_formula_of_var_formula ivar imeta = function
   | TMetaFunction (j, l) -> TMetaFunction (j, l)
   | TPredicate (j, l) -> TPredicate (j, List.map (meta_formula_of_var_formula ivar imeta) l)
 
+let rec is_modifiable f =
+  match f with
+  | TTrue -> false
+  | TFalse -> false
+  | TVar _ -> false
+  | TMetaVar _ -> true
+  | TNot f -> is_modifiable f
+  | TAnd (f1, f2) -> is_modifiable f1 || is_modifiable f2
+  | TOr (f1, f2) -> is_modifiable f1 || is_modifiable f2
+  | TForall (_, f) -> is_modifiable f
+  | TExists (_, f) -> is_modifiable f
+  | TMetaFunction _ -> true
+  | TPredicate (_, l) -> List.exists is_modifiable l
 
 (** Substitution **)
-
-(* let rec substitute_var i form frep = match form with *)
-(*   | TTrue -> TTrue *)
-(*   | TFalse -> TFalse *)
-(*   | TVar j -> *)
-(*       if i = j then frep *)
-(*       else TVar j *)
-(*   | TMetaVar j -> TMetaVar j *)
-(*   | TNot f -> TNot (substitute_var i f frep) *)
-(*   | TAnd (f1, f2) -> TAnd (substitute_var i f1 frep, substitute_var i f2 frep) *)
-(*   | TOr (f1, f2) -> TOr (substitute_var i f1 frep, substitute_var i f2 frep) *)
-(*   | TForall (j, f) -> *)
-(*       if i = j then TForall (j, f) *)
-(*       else TForall (j, substitute_var i f frep) *)
-(*   | TExists (j, f) -> *)
-(*       if i = j then TExists (j, f) *)
-(*       else TExists (j, substitute_var i f frep) *)
-(*   | TMetaFunction (j, l) -> TMetaFunction (j, l) *)
-(*   | TPredicate (j, l) -> TPredicate (j, List.map (fun f -> substitute_var i f frep) l) *)
 
 let rec substitute form a b =
   match form with
@@ -129,6 +123,7 @@ let rec substitute form a b =
   | TPredicate (i, l) -> TPredicate (i, List.map (fun f -> substitute f a b) l)
 
 let substitute_var i form frep = substitute form (TVar i) frep
+
 
 (** Conversion **)
 
