@@ -2,6 +2,8 @@ open Logic_formulas
 open Closers
 open Unification
 open Arrays_method
+open Lexer
+open Parser
 
 let () = print_endline "Hello, World!\n"
 
@@ -37,4 +39,4 @@ let f3 = Exists ("x", Impl (Predicate ("R", [Var "x"; Var "x"]), Forall ("y", Pr
 let f4 = Exists ("x", Forall ("y", Impl (Impl (Impl (Predicate ("R", [Predicate ("f", [Var "x"])]), Predicate ("R", [Predicate ("f", [Var "y"])])), Predicate ("R", [Var "x"])), Predicate ("R", [Var "y"]))))
 
 let () =
-  is_satisfiable f2
+  is_satisfiable f4
