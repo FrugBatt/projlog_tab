@@ -33,7 +33,7 @@ module StringSet = Set.Make (String)
 
 let set_string s i c = String.mapi (fun j c' -> if i = j then c else c') s
 
-let rec incr_string s =
+let incr_string s =
   let n = String.length s in
   let rec aux i =
     if i = -1 then
@@ -49,8 +49,6 @@ let rec incr_string s =
 let get_meta_val =
   let counter = ref "" in
   fun () -> counter := incr_string !counter; !counter
-  (* let counter = ref (-1) in *)
-  (* fun () -> incr counter; !counter *)
 
 
 (** MetaVar **)
