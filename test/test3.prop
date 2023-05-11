@@ -1,0 +1,1 @@
+exists x (R(x, x) => forall y R(x, y))
