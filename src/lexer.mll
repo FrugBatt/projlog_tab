@@ -16,8 +16,7 @@ rule token = parse
     |"=>"                 { IMPLIES }
     |"forall"             { FORALL }
     |"exists"             { EXISTS }
-    |['A'-'Z']['a'-'z']*  { PROP(Lexing.lexeme lexbuf) }
-    |['a'-'z']+           { VAR(Lexing.lexeme lexbuf) }
+    |['A'-'z']*           { NAME (Lexing.lexeme lexbuf) }
     |","                  {COMMA}
     |eof                  { EOF }
     | _                   { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }

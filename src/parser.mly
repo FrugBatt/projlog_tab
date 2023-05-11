@@ -1,6 +1,6 @@
 %token EOL EOF
 %token LPAREN RPAREN COMMA
-%token <string> PROP VAR
+%token <string> NAME
 %token AND OR NOT IMPLIES
 %token TRUE FALSE
 %token FORALL EXISTS
@@ -24,15 +24,17 @@ formula :
     | formula AND formula { Logic_formulas.And($1,$3) }
     | formula OR formula { Logic_formulas.Or($1,$3) }
     | formula IMPLIES formula { Logic_formulas.Impl($1,$3) }
-    | FORALL VAR formula { Logic_formulas.Forall($2,$3) }
-    | EXISTS VAR formula { Logic_formulas.Exists($2,$3) }
-    | PROP LPAREN args RPAREN { Logic_formulas.Predicate($1,$3) }
-    | VAR { Logic_formulas.Var($1) }
+    | FORALL NAME formula { Logic_formulas.Forall($2,$3) }
+    | EXISTS NAME formula { Logic_formulas.Exists($2,$3) }
+    | NAME LPAREN args RPAREN { Logic_formulas.Predicate($1,$3) }
+    | NAME { Logic_formulas.Var($1) }
     | TRUE { Logic_formulas.True }
     | FALSE { Logic_formulas.False }
     ;
 
 args :
-    | VAR { [Logic_formulas.Var($1)] }
-    | VAR COMMA args { [Logic_formulas.Var($1)]@($3) }
+    | NAME LPAREN args RPAREN { [Logic_formulas.Predicate($1,$3)] }
+    | NAME { [Logic_formulas.Var($1)] }
+    | NAME LPAREN args RPAREN COMMA args{ [Logic_formulas.Predicate($1,$3)]@($6) }
+    | NAME COMMA args { [Logic_formulas.Var($1)]@($3) }
     ;
