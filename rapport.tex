@@ -131,4 +131,70 @@
 
 \section{Équipe TAB}
 
+\paragraph{Sujet}
+Notre projet consiste à implémenter la méthode des tableaux qui est un algorithme permettant de montrer la satisfiabilité d'une formule en montrant que la négation de celle-ci ne peut l'être.
+
+\paragraph{Algorithme}
+
+\subparagraph{Développement de l'arbre}
+La méthode des tableaux consiste à construire un arbre dont la racine est la négation de la formule $f$ dont on cherche à montrer la satisfiabilité. Ensuite on essaye d'appliquer des règles sur les noeuds de l'arbre auquels on à appliqué aucune règle et qui ne sont pas des formules atomiques.
+
+\begin{itemize}
+  \item Règle $\alpha$ : $A \land B$, on ajoute $A$ et $B$ aux feuilles de l'arbre
+  \item Règle $\beta$ : $A \lor B$, on créer 2 branches, une avec $A$ et l'autre avec $B$
+  \item Règle $\gamma$ : $\forall x, A(x)$, on ajoute $A(X)$ aux feuilles de l'arbre avec $X$ une méta-variable (variable qu'il faudra unifier par la suite)
+  \item Règle $\delta$ : $\exists x, A(x)$, on ajoute $A(F(X_1, \ldots, X_n))$ aux feuilles de l'arbre avec $F$ une méta-fonction qui dépend des méta-variables déjà existantes sur la branche (qu'il faudra unifier par la suite)
+\end{itemize}
+
+On considère ces règles modulo l'équivalence logique ($A \implies B \equiv \neg A \lor B$)
+
+De ce fait, une fois qu'on a appliqué toutes les règles possibles, il ne reste que des formules atomiques qui sont de la forme $x$ une variable, $X$ une méta-variable, $P(\ldots)$ un prédicat (modulo la négation). Une fois ces noeuds obtenu il faut unifier.
+
+\subparagraph{Unification}
+Pour finir, il faut essayer de fermer chaque branche de l'arbre (ce qui signifie trouver une contradiction entre les formules d'une branche). Pour cela, on choisit de manière non déterministe 2 formules par branche et on essaye d'unifier ces formules afin d'avoir $f$ et $\lnot f$ ce qui est une contradiction. Si on trouve un tel ensemble de couples de formules, alors la formule racine ne peut pas être satisfaite et la formule originelle l'est. Sinon, la formule originelle ne l'est pas.
+
+\paragraph{Implémentation}
+Nous avons implémenté cet algorithme en OCaml. Nous avons d'abord défini le type des formules logiques et des arbres :
+\begin{verbatim}type tree_formula =
+  | TTrue
+  | TFalse
+  | TVar of string
+  | TMetaVar of string
+  | TNot of tree_formula
+  | TAnd of tree_formula * tree_formula
+  | TOr of tree_formula * tree_formula
+  | TForall of string * tree_formula
+  | TExists of string * tree_formula
+  | TMetaFunction of string * tree_formula list
+  | TPredicate of string * tree_formula list
+
+type tree =
+  | Nil
+  | Node of { formula: tree_formula; mutable broke: bool; mutable left: tree;
+  mutable right: tree; mutable father: tree }
+\end{verbatim}
+
+Ensuite nous avons implémenté les règles $\alpha$, $\beta$, $\gamma$ et $\delta$. Et une fonction \verb|tree_break| s'occupe d'appliquer sur place les règles précédemment codées tant qu'elle peut.
+
+Enfin, nous avons créer une recherche des couples potentiels pouvant fermer les branches en utilisant une monade de non déterminisme (qui ajoutait un style non déterministe plus cohérent avec l'algorithme théorique).
+
+Et finalement, pour chaque liste de couple de formules, on essaye de les unifier avec les méta-variables et les méta-fonctions avec l'algorithme de Robinson. Si on y arrive, alors on a trouvé une contradiction et la formule est satisfiable. Sinon, elle ne l'est pas.
+
+
+\paragraph{Remarques}
+\begin{itemize}
+  \item Nous n'avons pas l'implication ou l'équivalence dans les formules sur l'arbre. Cela vient du fait que la formule est directement traduite avec les $\lor$ et $\lnot$ lors de la construction de la formule.
+  \item Bien que les prédicats et les fonctions soient 2 objets différents, nous avons choisi par simplicité de ne pas les différencier dans le code. On appelle \verb|TPredicate| un prédicat lorsque cela ne peut être qu'un prédicat et une fonction lorsque cela ne peut être qu'une fonction. Cette indifférence vient du fait qu'on ne travaille par avec les valeurs mais on cherche simplement à unifier les formules, et dans ce cas là, un prédicat et une fonction sont géré de la même manière.
+\end{itemize}
+
+\paragraph{Problèmes rencontrés}
+Durant la réalisation de ce projet, nous avons rencontré plusieurs problèmes :
+\begin{itemize}
+  \item La première version du type des arbres n'incluait pas le père. De ce fait, il était difficile et peu efficace de récupérer les branches lorsqu'il le fallait (un parcours intégral depuis la racine était nécessaire). C'est en partant de ce soucis que nous avons finalement choisi d'inclure le père dans les noeuds.
+  \item L'unification n'était pas si évidente. Il fallait gérer les méta-variables et aussi les méta-fonctions qui possèdent quelques particularitées. Pour cela il a fallu rajouter des cas à l'algorithme de Robinson sur les méta-fonctions (étant donné qu'initialement il ne traite pas les méta-fonctions). Pour cela si deux méta-fonctions doivent être unifié il faut qu'elles aient des dépendences en commun et si une méta-fonction doit être unifier à un terme il doit avoir que des dépendences incluses dans celle de la méta-fonction.
+\end{itemize}
+
+\paragraph{Finalisation du projet}
+Une fois l'algorithme réalisé. Nous avons ajouté des outils d'utilisations pour un utilisateur. De ce fait on peut exécuter l'algorithme sur une formule quelconque dans un fichier qui sera parsé puis sila formule est satisfiable, alors on a réussi à fermer l'arbre et il sera générer un fichier \verb|.dot| étant la représentation de l'arbre avec les contradiction (représentation d'un arbre avec graphviz). Ces ajouts ne sont qu'une sur-couche pour un utilisateur afin qu'il puisse simplement utiliser le projet.
+
 \end{document}
