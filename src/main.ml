@@ -6,15 +6,17 @@ open Arrays_method
 (** Args **)
 
 let is_verbose = ref false
+let is_latex = ref false
 let input_file = ref ""
 let output_file = ref ""
 
 let anon_fun file = input_file := file
 
-let usage = "usage: " ^ Sys.argv.(0) ^ " [-v] file [-o output_file]"
+let usage = "usage: " ^ Sys.argv.(0) ^ " [-v] [-latex] file [-o output_file]"
 
 let speclist = [
   ("-v", Arg.Set is_verbose, "Prints the effective closer");
+  ("-latex", Arg.Set is_latex, "Prints the tree in latex");
   ("-o", Arg.Set_string output_file, "Sets the output file")
 ]
 
@@ -30,6 +32,7 @@ let write_file msg =
 let solve_formula tfl =
   let tree = tree_of_tree_formula_list tfl in
   tree_break tree;
+  if !is_latex then Printf.printf "Tree :\n%s\n" (Render.render_tree tree);
   let branchs = get_branchs tree in
   let closers_nondet = get_branchs_closers branchs in
   let closers = Non_deterministic.run closers_nondet in

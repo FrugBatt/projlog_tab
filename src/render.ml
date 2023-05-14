@@ -11,8 +11,8 @@ let render_tree_formula f =
     | TNot f -> "¬" ^ (aux f)
     | TAnd (f1, f2) -> "(" ^ (aux f1) ^ ")∧(" ^ (aux f2) ^ ")"
     | TOr (f1, f2) -> "(" ^ (aux f1) ^ ")∨(" ^ (aux f2) ^ ")"
-    | TForall (i, f) -> "∀" ^ i ^ (aux f)
-    | TExists (i, f) -> "∃" ^ i ^ (aux f)
+    | TForall (i, f) -> "∀" ^ i ^ "(" ^ (aux f) ^ ")"
+    | TExists (i, f) -> "∃" ^ i ^ "(" ^ (aux f) ^ ")"
     | TMetaFunction (i, l) ->
       let s = String.concat ", " (List.map aux l) in
       i ^ "'(" ^ s ^ ")"
@@ -20,6 +20,17 @@ let render_tree_formula f =
       let s = String.concat ", " (List.map aux l) in
       i ^ "(" ^ s ^ ")"
   in "\"" ^ (aux f) ^ "\""
+
+let render_tree t =
+  let prefix = "\\begin{tikzpicture}\n\\node{Nil}" and suffix = ";\n\\end{tikzpicture}" in
+  let rec aux t =
+    match t with
+    | Nil -> ""
+    | Node n ->
+        let pref = "child {node {" ^ (render_tree_formula n.formula) ^ "}\n" and suff = "}\n" in
+        let left_render = aux n.left and right_render = aux n.right in
+        pref ^ left_render ^ right_render ^ suff
+  in prefix ^ (aux t) ^ suffix
 
 let render tree closer =
   let n = size tree in

@@ -35,11 +35,13 @@ let rec unification l =
   | (f1, f2) :: t when f1 = f2 -> unification t
   | (f1, f2) :: _ when not (is_modifiable f1) && not (is_modifiable f2) -> false
   | (f1, f2) :: t when not (is_modifiable f1) -> unification ((f2, f1) :: t)
+  | (TMetaVar i, f) :: t ->
+    if has_formula f (TMetaVar i) then false
+    else
+      unification (substitute_unif t (TMetaVar i) f)
   | (TMetaFunction (i, []), f) :: t ->
     if is_modifiable f then false
     else unification (substitute_unif t (TMetaFunction (i, [])) f)
-    (* let meta = TMetaVar (get_meta_val ()) in *)
-      (* unification (substitute_unif l (TMetaFunction (i, [])) meta) *)
   | (TMetaFunction (i, l1), TMetaFunction (j, l2)) :: t ->
     if i = j then false
     else
@@ -56,10 +58,6 @@ let rec unification l =
     if FormulaSet.is_empty depvars then false
     else
       unification (substitute_unif t (TMetaFunction (i, l)) f)
-  | (TMetaVar i, f) :: t ->
-    if has_formula f (TMetaVar i) then false
-    else
-      unification (substitute_unif t (TMetaVar i) f)
   | (TPredicate (i, l1), TPredicate (j, l2)) :: t ->
     if i <> j || (List.length l1) <> (List.length l2) then false
     else unification ((List.combine l1 l2) @ t)
