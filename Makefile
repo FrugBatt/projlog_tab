@@ -13,3 +13,4 @@ test: tab
 .PHONY: clean
 clean:
 	rm -f *.aux *.log rapport.pdf tab test/*.dot test/*.png
+	dune clean
