@@ -11,6 +11,7 @@ type formula =
   | Exists of string * formula
   | Predicate of string * formula list
   | Impl of formula * formula
+[@@deriving show]
 
 type tree_formula =
   | TTrue

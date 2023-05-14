@@ -4,10 +4,9 @@
 %token AND OR NOT IMPLIES
 %token TRUE FALSE
 %token FORALL EXISTS
-%left OR NOT
-%left AND
-%left IMPLIES
-%left FORALL EXISTS
+%right IMPLIES
+%right OR NOT
+%right AND
 %start parse
 %type <Logic_formulas.formula> parse
 %%

@@ -30,6 +30,7 @@ let write_file msg =
 let solve_formula tfl =
   let tree = tree_of_tree_formula_list tfl in
   tree_break tree;
+  write_file (Render.render tree []) ;
   let branchs = get_branchs tree in
   let closers_nondet = get_branchs_closers branchs in
   let closers = Non_deterministic.run closers_nondet in
@@ -51,4 +52,5 @@ let is_satisfiable f =
 let _ = 
   Arg.parse speclist anon_fun usage;
   if !input_file = "" then (Arg.usage speclist usage; exit 1);
-  let lexbuf = Lexing.from_channel (open_in !input_file) in let lform = Parser.parse Lexer.token lexbuf in is_satisfiable lform
+  let lexbuf = Lexing.from_channel (open_in !input_file) in let lform = Parser.parse Lexer.token lexbuf in is_satisfiable lform ; 
+  Printf.printf "formula : %s\n" (show_formula lform);

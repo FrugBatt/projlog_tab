@@ -11,8 +11,7 @@
 \usepackage{fancyhdr}
 
 \usepackage[utf8x]{inputenc} 
-\usepackage[T1]{fontenc}      
-\usepackage[french]{babel} 
+\usepackage[T1]{fontenc}
 
 \usepackage{array}
 
@@ -191,10 +190,10 @@ Et finalement, pour chaque liste de couple de formules, on essaye de les unifier
 Durant la réalisation de ce projet, nous avons rencontré plusieurs problèmes :
 \begin{itemize}
   \item La première version du type des arbres n'incluait pas le père. De ce fait, il était difficile et peu efficace de récupérer les branches lorsqu'il le fallait (un parcours intégral depuis la racine était nécessaire). C'est en partant de ce soucis que nous avons finalement choisi d'inclure le père dans les noeuds.
-  \item L'unification n'était pas si évidente. Il fallait gérer les méta-variables et aussi les méta-fonctions qui possèdent quelques particularitées. Pour cela il a fallu rajouter des cas à l'algorithme de Robinson sur les méta-fonctions (étant donné qu'initialement il ne traite pas les méta-fonctions). Pour cela si deux méta-fonctions doivent être unifié il faut qu'elles aient des dépendences en commun et si une méta-fonction doit être unifier à un terme il doit avoir que des dépendences incluses dans celle de la méta-fonction.
+  \item L'unification n'était pas si évidente. Il fallait gérer les méta-variables et aussi les méta-fonctions qui possèdent quelques particularitées. Pour cela il a fallu rajouter des cas à l'algorithme de Robinson sur les méta-fonctions (étant donné qu'initialement il ne traite pas les méta-fonctions). Pour cela si deux méta-fonctions doivent êtres unifiées, il faut qu'elles aient des dépendences en commun et si une méta-fonction doit être unifiée à un terme il doit avoir que des dépendences incluses dans celles de la méta-fonction.
 \end{itemize}
 
 \paragraph{Finalisation du projet}
-Une fois l'algorithme réalisé. Nous avons ajouté des outils d'utilisations pour un utilisateur. De ce fait on peut exécuter l'algorithme sur une formule quelconque dans un fichier qui sera parsé puis sila formule est satisfiable, alors on a réussi à fermer l'arbre et il sera générer un fichier \verb|.dot| étant la représentation de l'arbre avec les contradiction (représentation d'un arbre avec graphviz). Ces ajouts ne sont qu'une sur-couche pour un utilisateur afin qu'il puisse simplement utiliser le projet.
+Une fois l'algorithme réalisé, nous avons ajouté des outils d'utilisation pour un utilisateur. De ce fait on peut exécuter l'algorithme sur une formule quelconque dans un fichier (d'extension \verb|.prop|) qui sera parsé puis si la formule est satisfiable, alors on a réussi à fermer l'arbre et un fichier sera généré (d'extension \verb|.dot|), étant la représentation de l'arbre fermé avec les contradictions (on utilise pour cela le module \verb|graphviz|). Ces ajouts ne sont qu'une sur-couche pour un utilisateur afin qu'il puisse simplement utiliser le projet.
 
 \end{document}
