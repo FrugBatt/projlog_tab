@@ -1,0 +1,1 @@
+(exists x (P(x) or Q)) => ((exists x P(x)) or Q)
